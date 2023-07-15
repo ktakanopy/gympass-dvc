@@ -2,8 +2,18 @@ import hydra
 import pandas as pd
 from omegaconf import DictConfig
 import numpy as np
-from src.utils import filter_list
+from src.utils import filter_list, get_numerical_features, get_categorical_features
 from sklearn.model_selection import train_test_split
+import scipy
+class Config:
+    def __init__(self, config):
+        self.config = config
+        self.raw_paths = config.paths.raw
+        self.processed_paths = config.paths.processed
+        self.processed_baseline_paths = config.paths.processed_baseline
+        self.features = config.make_dataset.features
+        self.split_size = config.make_dataset.split_size
+        self.random_state = config.make_dataset.random_state
 
 
 def add_labels(df):
@@ -53,43 +63,48 @@ def feat_engineering(df, small_categories_train, numeric_features, user_features
 
     return df
 
-@hydra.main(config_path="config", config_name="main", version_base=None)
+def get_small_categories(df):
+    counts = df['gym_category'].value_counts(normalize=True)
+    return counts[counts < 0.01].index
+
+def get_user_features(df, features):
+    numeric_features = sorted(get_numerical_features(df[features]))
+    user_features = [k for k in numeric_features if "user" in k]
+    return filter_list(user_features, ['user_age_group'])
+
+@hydra.main(config_path="../../config", config_name="main", version_base=None)
 def make_dataset(config: DictConfig):
     """Function to process the data"""
 
     print(f"Process data submission {config.paths.raw.submission}")
     print(f"Process data train {config.paths.raw.train}")
 
-    TRAIN_RAW_PATH = config.paths.raw.train
-    SUBMISSION_RAW_PATH = config.paths.raw.submission
-
-    SPLIT_SIZE = config.make_dataset.split_size
-    RANDOM_STATE = config.make_dataset.random_state
-
-    TARGET = config.make_dataset.target
-    FEATURES = config.make_dataset.features
-    
-    train_data = pd.read_excel(TRAIN_RAW_PATH)
-    submission_data = pd.read_excel(SUBMISSION_RAW_PATH)
+    train_data = pd.read_excel(config.paths.raw.train)
+    submission_data = pd.read_excel(config.paths.raw.submission)
     
     train_data = preprocessing(train_data) 
-    submission_data = preprocessing(submission_data) 
-    
+    submission_data = preprocessing(submission_data, test=True) 
+
     gym_indexes = train_data.gym.unique()
-    train_index, test_index = train_test_split(gym_indexes, test_size=SPLIT_SIZE, random_state=RANDOM_STATE)
+    train_index, test_index = train_test_split(gym_indexes, test_size=config.make_dataset.split_size, random_state=config.make_dataset.random_state)
 
     train = train_data[train_data.gym.isin(train_index)]
     test = train_data[train_data.gym.isin(test_index)]
 
-    X_train = train[FEATURES]
-    y_train = train[TARGET]
+    small_categories = get_small_categories(train_data)
 
-    X_test = test[FEATURES]
-    y_test = test[TARGET]
+    train.to_parquet(config.paths.processed_baseline.train)
+    test.to_parquet(config.paths.processed_baseline.test)
 
-    # Print the shapes of the training and testing sets
-    print("Training set shape:", X_train.shape, y_train.shape)
-    print("Testing set shape:", X_test.shape, y_test.shape) 
+    user_features = get_user_features(train, config.make_dataset.features)
+    numeric_features = sorted(get_numerical_features(train[config.make_dataset.features]))
+
+    train_data = feat_engineering(train_data, small_categories, numeric_features, user_features) 
+    submission_data = feat_engineering(submission_data, small_categories, numeric_features, user_features)
+    
+    train.to_parquet(config.paths.processed.train)
+    test.to_parquet(config.paths.processed.test)
+    submission_data.to_parquet(config.paths.processed.submission)
 
 
 if __name__ == "__main__":

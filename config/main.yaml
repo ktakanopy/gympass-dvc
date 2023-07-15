@@ -1,12 +1,16 @@
 # main.yaml
 paths:
   raw: 
-    submission: data/raw/submission.xslx
-    train: data/raw/xslx.xslx
+    submission: data/raw/submission.xlsx
+    train: data/raw/train.xlsx
+  processed_baseline: 
+    test: data/processed/test_baseline.parquet
+    train: data/processed/train_baseline.parquet
   processed: 
     test: data/processed/test.parquet
     train: data/processed/train.parquet
     submission: data/processed/submission.parquet
+
 
 make_dataset:
   split_size: 0.2
