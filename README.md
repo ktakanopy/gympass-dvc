@@ -1,108 +1,73 @@
-example
-==============================
+
+This project was created using this (template)[https://github.com/gerbeldo/cookiecutter-dvc/tree/main].
+
+# Notebook objective
+- This notebook is the first step before the modelling phase. We are going to check noise data, nulls. And try to investigate patterns. 
+- Main questions for the Exploratory Data Analysis (EDA):
+    - Number of data points in train data and submission data.
+    - How many users? How many users in train data and in submission? 
+    - How many gyms?
+    - How many churns, upgrades, and keep?
+    - Do we have the same gyms/users in the application (submission) file?
+    - What are the gyms with the highest churn rate?
+    - How different is the months_usage between "top churn gyms" with others?
+    - How is the "top churn gyms" distributions ? How is the distribution in relation of user plan?
+    - Average user's age by gyms with top churns?
+    - Average usage in months by gyms with top churns?
+    - How the days since the first visit is different in each class/target (boxplot, histogram)?
+    - How the target gym visits in lat 60 days is different in each class/target (boxplot, histogram)?
+    - How the number of gyms is different in each class/target (boxplot, histogram)?
+    - How the user age is different in each class/target (boxplot, histogram)?
+    - How the user billing (user usage months) is different in each class/target (boxplot, histogram)?
+    - How the user days since the first billing is different in each class/target (boxplot, histogram)?
+    - How the user days since first visiting in target gym is different in each class/target (boxplot, histogram)?
+    - How the user lifetime visits is different in each class/target (boxplot, histogram)?
+    - How the user plan will affect the target? How is the distribution of churned by plans?
+    - How the gym category affect the target? How is the distribution of churned by plans?
+    - Who are the most loyal users of Gympass? And which gym will undergo the uptier?
+
+# Assumptions
+- I assumed the "application" file contain all information about the gym. And we are trying to predict churn for new gyms. 
+- “Visited the product 60 days before the communication “ → The product here is the gym
+- “All the data passed is just for the gyms that will suffer an uptier”.
+- As the task is to focus more in churn than upgrade. I focused more the business metrics in for churn. But in real life could be better also to predict the revenue with upgrade. 
+- Loyalty affects churn
+- Recency/time affects churn
+- User behavior and characteristics affects the gym. Example: user age, user location (in this case, the number of gyms in 5km)
+
+## The way I understood some concepts and variables
+
+"Gympass network": any gym registered in gympass.
 
 
-
-Instructions
-------------
-1. Clone the repo.
-1. Run `make dirs` to create the missing parts of the directory structure described below. 
-1. *Optional:* Run `make venv` to create a python virtual environment. Skip if using conda or some other env manager.
-    1. Run `source .venv/bin/activate` to activate the venv. (or use provided functions/aliases!)
-1. Run `make requirements` to install required python packages.
-1. Put the raw data in `data/raw`.
-1. To save the raw data to the DVC cache, run `dvc commit raw_data.dvc`
-1. Edit the code files to your heart's desire.
-1. Process your data, train and evaluate your model using `dvc repro eval.dvc` or `make reproduce`
-1. When you're happy with the result, commit files (including .dvc files) to git.
- 
+VARIABLE x DESCRIPTION
+- gym_days_since_first_visit: **The amount** of	days elapsed since first visit of **ANY** user
+- gym_last_60_days_visits: **The amount** of visits of **ANY** user in last 60 days
+- user_days_since_first_billing: **The amount** of days elapsed since first billing
+- user_days_since_first_gym_visit:	**The amount** of days elapsed since first visit in gym that will suffer uptier
+- user_days_since_first_visit: **Amount** of days elapsed since first visit to any gympass gym
+- user_last_60_days_visit_share: **Amount** of visits in gym that will suffer uptier /**amount** of visits in gympass network, considering last 60 before communication
+- user_last_60_days_visits:	**Total visits** in gympass network, considering last 60 before communication
+- user_lifetime_visit_share:	During user lifetime, **total visits** in gym that will suffer uptier / **total visits** in gympass network
 
 
+# Feature Engineering
+- Multiple stats metrics (average, std deviation) of gyms features
 
-Project Organization
-------------
-
-    ├── LICENSE
-    ├── Makefile           <- Makefile with commands like `make dirs` or `make clean`
-    ├── README.md          <- The top-level README for developers using this project.
-    │
-    ├── data
-    │   ├── processed      <- The final, canonical data sets for modeling.
-    │   └── raw            <- The original, immutable data dump.
-    │
-    ├── definitions.py     <- Contains useful project-specific "environment variables", such as ROOT_DIR.
-    │
-    ├── eval.dvc           <- The end of the data pipeline - evaluates the trained model on the test dataset.
-    │
-    ├── models             <- Trained and serialized models, model predictions, or model summaries
-    │
-    ├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
-    │                         the creator's initials, and a short `-` delimited description, e.g.
-    │                         `1.0-jqp-initial-data-exploration`.
-    │
-    ├── process_data.dvc   <- Process the raw data and prepare it for training.
-    ├── raw_data.dvc       <- Keeps the raw data versioned.
-    │
-    ├── references         <- Data dictionaries, manuals, and all other explanatory materials.
-    │
-    ├── reports                     <- Generated analysis as HTML, PDF, LaTeX, etc.
-    │   └── figures                 <- Generated graphics and figures to be used in reporting
-    │   └── metrics.txt             <- Relevant metrics after evaluating the model.
-    │   └── training_metrics.txt    <- Relevant metrics from training the model.
-    │
-    ├── requirements-core.txt    <- project specific requirements, no secondary dependencies.
-    ├── requirements-dev.txt     <- development requirements.
-    ├── requirements.txt         <- The complete requirements file for reproducing the analysis environment,
-    │                               automatically generated with `pip freeze`, by `make requirements`.
-    │
-    ├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
-    ├── src                <- Source code for use in this project.
-    │   ├── __init__.py    <- Makes src a Python module
-    │   │
-    │   ├── data           <- Scripts to download or generate data
-    │   │   └── make_dataset.py
-    │   │
-    │   ├── models         <- Scripts to train models and then use trained models to make predictions
-    │   │   │            
-    │   │   ├── predict_model.py
-    │   │   └── train_model.py
-    │   │
-    │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
-    │       └── visualize.py
-    │
-    ├── tox.ini            <- tox file with settings for running tox; see tox.testrun.org
-    └── train.dvc          <- Traing a model on the processed data.
+# Improvements
+- Use the features by different windows instead of just 60. To do this I would need the timestamp of each visit in gym
+- Use user app interactions: user search tokens, time using the app, time using other gympass partnership apps (zenklub, etc)
+- Use gym location, address, state, city, region. Maybe try to join with public data (ex: financial health of the location, if its local is dangerous)
+- Get public information about the gym. Example: get the number of stars of the gym in google maps. Or the number of visits by day using google maps (Don't forget that each gym has its own membership in addition to the partnership with Gympass.)
+- Get RFM and other loyalty metrics for each customer
+- See how far the visited is from user home
+- Synthesize data with TVAE
+- Get Number of Upgrades in Past
+- get Number of Downgrades in Past
+- Model interpretation by sample cases
+- Retrain in all database
 
 
---------
-
-# venv activation aliases
-
-to avoid typing the whole path to activation scripts, create a function/alias!
-
-### bash
-
-add the following alias to `~/.bashrc`
-
-```bash
-alias activate=". .venv/bin/activate"
-```
-
-### fish 
-
-create `~/.config/fish/functions/activate.fish` containing
-
-```fish
-# activate python venv from project root, in fish.
-function activate
-    source .venv/bin/activate.fish
-end
-```
-
-# references
-
-Modified from: [DAGsHub template](https://dagshub.com/DAGsHub-Official/Cookiecutter-DVC)
-
-<p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
-
-pre-commit hooks: [article](https://towardsdatascience.com/4-pre-commit-plugins-to-automate-code-reviewing-and-formatting-in-python-c80c6d2e9f5)
+# Questions
+- Does the 'gym network' contains the target gym?
+- Why the "_share" variables can be so high? 

@@ -49,7 +49,7 @@ pull:
 
 ## Reproduce the DVC pipeline - recompute any modified outputs such as processed data or trained models
 reproduce:
-	dvc repro eval.dvc
+	dvc repro
 
 #################################################################################
 # PROJECT RULES                                                                 #
