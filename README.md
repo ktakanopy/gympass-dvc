@@ -66,6 +66,7 @@ VARIABLE x DESCRIPTION
 - get Number of Downgrades in Past
 - Model interpretation by sample cases
 - Retrain in all database
+- Use OO for to have a cleaner code
 
 
 # Questions

@@ -2,19 +2,9 @@ import hydra
 import pandas as pd
 from omegaconf import DictConfig
 import numpy as np
-from src.utils import filter_list, get_numerical_features, get_categorical_features
+from src.utils import filter_list, get_numerical_features, swap_inf_to_none, save_feature_list
 from sklearn.model_selection import train_test_split
 import scipy
-class Config:
-    def __init__(self, config):
-        self.config = config
-        self.raw_paths = config.paths.raw
-        self.processed_paths = config.paths.processed
-        self.processed_baseline_paths = config.paths.processed_baseline
-        self.features = config.make_dataset.features
-        self.split_size = config.make_dataset.split_size
-        self.random_state = config.make_dataset.random_state
-
 
 def add_labels(df):
     df.rename(columns={'is_churn': 'churn_target'}, inplace=True)
@@ -42,7 +32,18 @@ def preprocessing(df, use_user_group_text=False, test=False):
 
     return df
 
-def feat_engineering(df, small_categories_train, numeric_features, user_features):
+def feat_engineering(df, small_categories_train, numeric_features, user_features, feature_list):
+    new_features = [
+        'user_visit_share_months_usage_ratio',
+        'last_60_user_visit_months_usage_ratio',
+        'last_60_user_visit_share_months_usage_ratio',
+        'last_60_user_visit_frequency',
+        'user_visit_share_months_log_usage_ratio',
+        'last_60_user_visit_months_log_usage_ratio',
+        'last_60_user_visit_share_months_log_usage_ratio',
+        'gym_user_count'
+    ]
+
     df['user_visit_share_months_usage_ratio'] = df['user_lifetime_visit_share'] / df['months_usage']
     df['last_60_user_visit_months_usage_ratio'] = df['user_last_60_days_visits'] / df['months_usage']
     df['last_60_user_visit_share_months_usage_ratio'] = df['user_last_60_days_visits'] / df['months_usage']
@@ -50,7 +51,9 @@ def feat_engineering(df, small_categories_train, numeric_features, user_features
 
     numeric_features = filter_list(numeric_features, ['user_age_group'])
     for num_feat in numeric_features:
-        df[num_feat + '_log'] = np.log(df[num_feat]+1)
+        new_feature = num_feat + '_log'
+        df[new_feature] = np.log(df[num_feat]+1)
+        new_features.append(new_feature)
 
     df['user_visit_share_months_log_usage_ratio'] = df['user_lifetime_visit_share'] / df['months_usage_log']
     df['last_60_user_visit_months_log_usage_ratio'] = df['user_last_60_days_visits'] / df['months_usage_log']
@@ -58,10 +61,17 @@ def feat_engineering(df, small_categories_train, numeric_features, user_features
 
     gym_features = df.groupby('gym')[user_features].agg(['sum', 'mean', 'max', np.median, np.average, np.std, np.var, np.ptp, scipy.stats.skew, scipy.stats.kurtosis])
     gym_features.columns = ['gym_' + '_'.join(col).strip() for col in gym_features.columns.values]
+    new_features.extend(gym_features.columns.values.tolist())
+    
     df['gym_user_count'] = df.groupby('gym')['user'].transform('nunique')
     df = df.merge(gym_features, on='gym', how='left')
 
-    return df
+    df['gym_category'].replace(small_categories_train, 'Others').value_counts(normalize=True)
+    df = swap_inf_to_none(df)
+
+    feature_list.extend(new_features)
+    return df, feature_list
+
 
 def get_small_categories(df):
     counts = df['gym_category'].value_counts(normalize=True)
@@ -98,13 +108,17 @@ def make_dataset(config: DictConfig):
 
     user_features = get_user_features(train, config.make_dataset.features)
     numeric_features = sorted(get_numerical_features(train[config.make_dataset.features]))
+    
+    feature_list = config.make_dataset.features
 
-    train_data = feat_engineering(train_data, small_categories, numeric_features, user_features) 
-    submission_data = feat_engineering(submission_data, small_categories, numeric_features, user_features)
+    train_data, feature_list = feat_engineering(train_data, small_categories, numeric_features, user_features, feature_list) 
+    submission_data, _ = feat_engineering(submission_data, small_categories, numeric_features, user_features, feature_list.copy())
     
     train.to_parquet(config.paths.processed.train)
     test.to_parquet(config.paths.processed.test)
     submission_data.to_parquet(config.paths.processed.submission)
+    
+    save_feature_list(feature_list, config)
 
 
 if __name__ == "__main__":

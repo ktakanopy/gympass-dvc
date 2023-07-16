@@ -1,38 +1,74 @@
-# main.yaml
+---
 paths:
-  raw: 
+  raw:
     submission: data/raw/submission.xlsx
     train: data/raw/train.xlsx
-  processed_baseline: 
+  processed_baseline:
     test: data/processed/test_baseline.parquet
     train: data/processed/train_baseline.parquet
-  processed: 
+  processed:
     test: data/processed/test.parquet
     train: data/processed/train.parquet
     submission: data/processed/submission.parquet
-
+  assets:
+    feature_engineering_list: data/assets/feature_engineering_list.bin
+    xgb_params: data/assets/xgb_params.bin
+    predictions: data/assets/predictions.bin
 
 make_dataset:
   split_size: 0.2
   random_state: 42
-  target: is_churn
+  target: churn_target
   features:
-  - user_lifetime_visit_share
-  - user_engagement
-  - user_visit_frequency
-  - user_days_since_first_billing
-  - gym_days_since_first_visit
-  - gym_category
-  - gym_visit_frequency
-  - user_age
-  - years_usage
-  - user_age_group
-  - gym_last_60_days_visits
-  - gyms_5km
-  - user_last_60_days_visits
-  - user_days_since_first_visit
-  - months_usage
-  - user_plan
-  - user_lifetime_visits
-  - user_days_since_first_gym_visit
-  - user_last_60_days_visit_share
+    - user_lifetime_visit_share
+    - user_engagement
+    - user_visit_frequency
+    - user_days_since_first_billing
+    - gym_days_since_first_visit
+    - gym_category
+    - gym_visit_frequency
+    - user_age
+    - years_usage
+    - user_age_group
+    - gym_last_60_days_visits
+    - gyms_5km
+    - user_last_60_days_visits
+    - user_days_since_first_visit
+    - months_usage
+    - user_plan
+    - user_lifetime_visits
+    - user_days_since_first_gym_visit
+    - user_last_60_days_visit_share
+
+train_model:
+  target: churn_target
+  eval_size: 0.2
+  early_stopping_rounds: 20
+  categorical_features:
+    - gym_category
+    - user_plan
+  baselines:
+    heuristic:
+      threshold: 0.2
+    decision_tree:
+      numeric_features:
+        - gym_days_since_first_visit
+        - gym_last_60_days_visits
+        - gym_visit_frequency
+        - gyms_5km
+        - months_usage
+        - user_age
+        - user_age_group
+        - user_days_since_first_billing
+        - user_days_since_first_gym_visit
+        - user_days_since_first_visit
+        - user_engagement
+        - user_last_60_days_visit_share
+        - user_last_60_days_visits
+        - user_lifetime_visit_share
+        - user_lifetime_visits
+        - user_visit_frequency
+        - years_usage
+      categorical_features:
+        - gym_category
+        - user_plan

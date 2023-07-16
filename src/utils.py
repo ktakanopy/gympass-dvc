@@ -79,6 +79,41 @@ def show_null_values_df(df):
 def swap_inf_to_none(df):
     df.replace([np.inf, -np.inf], None, inplace=True)
     return df
+from joblib import dump, load
+
+def save_feature_list(feature_list, config):
+    dump(feature_list, config.paths.assets.feature_engineering_list)
+
+def load_feature_list(config):
+    return load(config.paths.assets.feature_engineering_list)
+
+def load_xgb_params(config):
+    return load(config.paths.assets.xgb_params)
+
+def save_predictions(heuristic_test_predictions, decision_test_tree_predictions, xgb_classifier_test_predictions, xgb_classifier_submission_predictions, config):
+    # create a dictionary to save all the variables
+    predictions = {
+        'heuristic_test_predictions': heuristic_test_predictions,
+        'decision_test_tree_predictions': decision_test_tree_predictions,
+        'xgb_classifier_test_predictions': xgb_classifier_test_predictions,
+        'xgb_classifier_submission_predictions': xgb_classifier_submission_predictions,
+    }
+    
+    # save the dictionary
+    dump(predictions, config.paths.assets.predictions)
+
+
+def load_predictions(config):
+    # load the dictionary
+    predictions = load(config.paths.assets.predictions)
+
+    # unpack the dictionary
+    heuristic_test_predictions = predictions['heuristic_test_predictions']
+    decision_test_tree_predictions = predictions['decision_test_tree_predictions']
+    xgb_classifier_test_predictions = predictions['xgb_classifier_test_predictions']
+    xgb_classifier_submission_predictions = predictions['xgb_classifier_submission_predictions']
+
+    return heuristic_test_predictions, decision_test_tree_predictions, xgb_classifier_test_predictions, xgb_classifier_submission_predictions
 
 def evaluate_metrics(y_test, y_pred, thres=None, labels=None, normalize='all'):
     precision, recall, thresholds = precision_recall_curve(y_test, y_pred)
