@@ -66,7 +66,8 @@ VARIABLE x DESCRIPTION
 - get Number of Downgrades in Past
 - Model interpretation by sample cases
 - Retrain in all database
-- Use OO for to have a cleaner code
+- Use Orient Object Programming for to have a cleaner code
+- Diagnose the warnings
 
 
 # Questions

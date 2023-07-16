@@ -2,8 +2,7 @@ import hydra
 import pandas as pd
 from omegaconf import DictConfig
 import numpy as np
-from src.utils import filter_list, get_numerical_features, swap_inf_to_none, save_feature_list
-from sklearn.model_selection import train_test_split
+from src.utils import filter_list, get_numerical_features, swap_inf_to_none, save_feature_list, generate_split
 import scipy
 
 def add_labels(df):
@@ -82,6 +81,23 @@ def get_user_features(df, features):
     user_features = [k for k in numeric_features if "user" in k]
     return filter_list(user_features, ['user_age_group'])
 
+def generate_feat_feat_engineering(train, test, submission_data, config):
+    user_features = get_user_features(train, config.make_dataset.features)
+    numeric_features = sorted(get_numerical_features(train[config.make_dataset.features]))
+    
+    feature_list = config.make_dataset.features
+
+    small_categories = get_small_categories(train)
+
+    train_processed, feature_list = feat_engineering(train, small_categories, numeric_features, user_features, feature_list) 
+    test_processed, _ = feat_engineering(test, small_categories, numeric_features, user_features, feature_list) 
+    submission_processed, _ = feat_engineering(submission_data, small_categories, numeric_features, user_features, feature_list.copy())
+    
+    return train_processed, test_processed, submission_processed, list(set(feature_list))
+
+def get_duplicated_columns(df):
+    return df.columns[df.columns.duplicated()]
+
 @hydra.main(config_path="../../config", config_name="main", version_base=None)
 def make_dataset(config: DictConfig):
     """Function to process the data"""
@@ -94,29 +110,25 @@ def make_dataset(config: DictConfig):
     
     train_data = preprocessing(train_data) 
     submission_data = preprocessing(submission_data, test=True) 
+    
+    assert len(train_data.columns) == len(set(train_data.columns)), f"The train_data has duplicated columns: {get_duplicated_columns(train_data)}"
+    assert len(submission_data.columns) == len(set(submission_data.columns)), f"The submission data has duplicated columns: {get_duplicated_columns(submission_data)}"
 
-    gym_indexes = train_data.gym.unique()
-    train_index, test_index = train_test_split(gym_indexes, test_size=config.make_dataset.split_size, random_state=config.make_dataset.random_state)
-
-    train = train_data[train_data.gym.isin(train_index)]
-    test = train_data[train_data.gym.isin(test_index)]
-
-    small_categories = get_small_categories(train_data)
+    train, test = generate_split(train_data, config.make_dataset.split_size, config.make_dataset.random_state)
 
     train.to_parquet(config.paths.processed_baseline.train)
     test.to_parquet(config.paths.processed_baseline.test)
-
-    user_features = get_user_features(train, config.make_dataset.features)
-    numeric_features = sorted(get_numerical_features(train[config.make_dataset.features]))
     
-    feature_list = config.make_dataset.features
+    train_processed, test_processed, submission_processed, feature_list = \
+            generate_feat_feat_engineering(train, test, submission_data, config)
 
-    train_data, feature_list = feat_engineering(train_data, small_categories, numeric_features, user_features, feature_list) 
-    submission_data, _ = feat_engineering(submission_data, small_categories, numeric_features, user_features, feature_list.copy())
-    
-    train.to_parquet(config.paths.processed.train)
-    test.to_parquet(config.paths.processed.test)
-    submission_data.to_parquet(config.paths.processed.submission)
+    assert len(train_processed.columns) == len(set(train_processed.columns)), f"The train_processed has duplicated columns: {get_duplicated_columns(train_processed)}"
+    assert len(test_processed.columns) == len(set(test_processed.columns)), f"The test_processed has duplicated columns: {get_duplicated_columns(test_processed)}"
+    assert len(submission_processed.columns) == len(set(submission_processed.columns)), f"The submission_processed has duplicated columns: {get_duplicated_columns(submission_processed)}"
+
+    train_processed.to_parquet(config.paths.processed.train)
+    test_processed.to_parquet(config.paths.processed.test)
+    submission_processed.to_parquet(config.paths.processed.submission)
     
     save_feature_list(feature_list, config)
 

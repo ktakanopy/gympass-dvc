@@ -35,20 +35,8 @@ clean:
 	find . -type f -name "*.py[co]" -delete
 	find . -type d -name "__pycache__" -delete
 
-## Lint using flake8
-lint:
-	flake8 src
-
-## Upload Data to default DVC remote
-push:
-	dvc push
-
-## Download Data from default DVC remote
-pull:
-	dvc pull
-
 ## Reproduce the DVC pipeline - recompute any modified outputs such as processed data or trained models
-reproduce:
+repro:
 	export PYTHONPATH=$PYTHONPATH:`pwd`; dvc repro
 #################################################################################
 # PROJECT RULES                                                                 #

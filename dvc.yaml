@@ -8,17 +8,14 @@ stages:
       - models:
           persist: true
     metrics:
-      - reports/training_metrics.txt:
+      - reports/validation_report.json:
           cache: false
-  eval:
-    cmd: python src/models/predict_model.py
+  reports:
+    cmd: python src/models/generate_reports.py
     deps:
       - data/processed
       - models
-      - src/models/predict_model.py
-    metrics:
-      - reports/metrics.txt:
-          cache: false
+      - src/models/generate_reports.py
   process_data:
     cmd: python src/data/make_dataset.py
     deps:

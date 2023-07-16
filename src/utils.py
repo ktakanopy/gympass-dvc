@@ -1,18 +1,8 @@
-from collections import Counter
-from typing import List, Optional, Tuple
-
+from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import numpy as np
-import optuna
-import pandas as pd
-import scipy
 import seaborn as sns
-from pandas import DataFrame
-from sklearn.metrics import (auc, classification_report, confusion_matrix,
-                             f1_score, precision_recall_curve, roc_auc_score)
-from sklearn.metrics import ConfusionMatrixDisplay
-from sklearn.model_selection import KFold
-from sklearn.pipeline import Pipeline
+from sklearn.metrics import (auc, classification_report, confusion_matrix, precision_recall_curve )
 
 def get_features(df, target_features, index_features):
     return list(set(list(df)).difference(target_features + index_features))
@@ -58,10 +48,10 @@ def plot_count(df, column, figsize=(10,6), title='Distribution of Target Classes
     plt.show()
 
 def get_numerical_features(df):
-    return df.select_dtypes(include=[np.number]).columns.tolist()
+    return df.select_dtypes(include=[np.number]).columns
 
 def get_categorical_features(df):
-    return df.select_dtypes(include=['object']).columns.tolist()
+    return df.select_dtypes(include=['object']).columns
 
 
 def filter_list(base_list, filter_list):
@@ -85,10 +75,21 @@ def save_feature_list(feature_list, config):
     dump(feature_list, config.paths.assets.feature_engineering_list)
 
 def load_feature_list(config):
-    return load(config.paths.assets.feature_engineering_list)
+    return sorted(load(config.paths.assets.feature_engineering_list))
 
 def load_xgb_params(config):
     return load(config.paths.assets.xgb_params)
+
+def get_column_indices(df, column_names):
+    return [df.columns.get_loc(c) for c in column_names if c in df]
+
+def generate_split(train_data, test_size, random_state):
+    gym_indexes = train_data.gym.unique()
+    train_index, test_index = train_test_split(gym_indexes, test_size=test_size, random_state=random_state)
+
+    train = train_data[train_data.gym.isin(train_index)]
+    test = train_data[train_data.gym.isin(test_index)]
+    return train, test
 
 def save_predictions(heuristic_test_predictions, decision_test_tree_predictions, xgb_classifier_test_predictions, xgb_classifier_submission_predictions, config):
     # create a dictionary to save all the variables

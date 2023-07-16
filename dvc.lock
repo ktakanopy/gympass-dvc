@@ -10,11 +10,50 @@ stages:
       nfiles: 3
     - path: src/data/make_dataset.py
       hash: md5
-      md5: 14b34f66a68b1f173247c76f85e9b93c
-      size: 5517
+      md5: 83eb85722b90dcce41dd8d865176fbf4
+      size: 6669
     outs:
     - path: data/processed
       hash: md5
-      md5: 55dcfee143553663c4d6a9e79e5fd037.dir
-      size: 5720632
+      md5: b293a74d3fcc649c845cf0816192d6ee.dir
+      size: 15884842
       nfiles: 5
+  train:
+    cmd: python src/models/train_model.py
+    deps:
+    - path: data/processed
+      hash: md5
+      md5: b293a74d3fcc649c845cf0816192d6ee.dir
+      size: 15884842
+      nfiles: 5
+    - path: src/models/train_model.py
+      hash: md5
+      md5: 9934c79b06815e4931f288e38aa743e1
+      size: 4328
+    outs:
+    - path: models
+      hash: md5
+      md5: d751713988987e9331980363e24189ce.dir
+      size: 0
+      nfiles: 0
+    - path: reports/validation_report.json
+      hash: md5
+      md5: e328faa7026ec97f20903010f1fa98f1
+      size: 526
+  reports:
+    cmd: python src/models/generate_reports.py
+    deps:
+    - path: data/processed
+      hash: md5
+      md5: b293a74d3fcc649c845cf0816192d6ee.dir
+      size: 15884842
+      nfiles: 5
+    - path: models
+      hash: md5
+      md5: d751713988987e9331980363e24189ce.dir
+      size: 0
+      nfiles: 0
+    - path: src/models/generate_reports.py
+      hash: md5
+      md5: d41d8cd98f00b204e9800998ecf8427e
+      size: 0
