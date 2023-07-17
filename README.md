@@ -75,7 +75,8 @@ streamlit run gympass_test_report.py
 - how does the user plan affect the target? how is the distribution of churned by plans?
 - how does the gym category affect the target? how is the distribution of churned by plans?
 - who are the most loyal users of gympass? and which gym will undergo the uptier?
-- assumptions
+
+#  Assumptions
 - i assumed that the "application" file contains all the information about the gym and that we are trying to predict churn for new gyms.
 - "visited the product 60 days before the communication" → the product here refers to the gym.
 - "all the data passed is just for the gyms that will suffer an uptier."
