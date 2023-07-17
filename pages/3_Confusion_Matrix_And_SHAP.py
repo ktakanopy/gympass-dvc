@@ -3,7 +3,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
-import plotly.express as px
 
 def read_metrics(model):
     # Reads the metrics and confusion matrix dataframes for a given model

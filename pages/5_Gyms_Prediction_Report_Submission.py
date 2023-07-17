@@ -3,7 +3,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
-import plotly.express as px
 from sklearn.metrics import classification_report
 import hydra
 from omegaconf import DictConfig

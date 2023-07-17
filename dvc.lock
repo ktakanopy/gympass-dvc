@@ -30,7 +30,6 @@ stages:
       hash: md5
       md5: edd4e8b6730e0c0d525fecae92d285a8
       size: 4654
-      isexec: true
     outs:
     - path: models
       hash: md5
