@@ -90,3 +90,4 @@ coverage.xml
 
 # Mypy cache
 .mypy_cache/
+/models

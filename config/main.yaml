@@ -69,3 +69,7 @@ train_model:
       categorical_features:
         - gym_category
         - user_plan
+
+generate_reports:
+  target: churn_target
+  threshold_user: 15

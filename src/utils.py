@@ -116,39 +116,11 @@ def load_predictions(config):
 
     return heuristic_test_predictions, decision_test_tree_predictions, xgb_classifier_test_predictions, xgb_classifier_submission_predictions
 
-def evaluate_metrics(y_test, y_pred, thres=None, labels=None, normalize='all'):
+def get_best_threshold_f1(y_test, y_pred):
     precision, recall, thresholds = precision_recall_curve(y_test, y_pred)
-    pr_auc = auc(recall, precision)
-    print(f'Precision-Recall AUC: {pr_auc}')
 
     f1_scores = 2*precision*recall / (precision + recall)
     f1_scores = np.nan_to_num(f1_scores, nan=-np.inf)
     best_index = np.argmax(f1_scores)
-    best_threshold = thresholds[best_index] if thres is None else thres
-    best_score = f1_scores[best_index]
-
-    print("classification_report")
-    print(classification_report(y_test, y_pred > best_threshold))
-    print()
-
-    print(f'Best F1-score: {best_score} at threshold {best_threshold}')
-    
-    plt.plot(recall, precision)
-    plt.scatter(recall[best_index], precision[best_index], color='red')
-    plt.xlabel('Recall')
-    plt.ylabel('Precision')
-    plt.title('Precision-Recall curve')
-    plt.show()
-    
-    plot_confusion_matrix(y_test, y_pred > best_threshold, labels, normalize)
+    best_threshold = thresholds[best_index]
     return best_threshold
-
-
-def plot_confusion_matrix(y_true, y_pred_class, labels, normalize=False):
-    cm = confusion_matrix(y_true, y_pred_class, normalize=normalize)
-    cm_display = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
-    cm_display.plot(cmap='Blues')
-    plt.title('Confusion Matrix')
-    plt.xlabel('Predicted Label')
-    plt.ylabel('True Label')
-    plt.show()

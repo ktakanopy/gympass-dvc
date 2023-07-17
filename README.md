@@ -1,7 +1,24 @@
 
-This project was created using this (template)[https://github.com/gerbeldo/cookiecutter-dvc/tree/main].
+# Gympass test
 
-# Notebook objective
+This project was created in objective to solve a churn prediction for a database of gyms. The task description can be found in `task` folder.
+
+# Strategy
+
+This project was created using this [template](https://github.com/gerbeldo/cookiecutter-dvc/tree/main).
+
+To solve the problem, the following steps were taken:
+
+- Data cleaning to remove or treat noises.
+- Data analysis to identify patterns
+- Creation of two baselines to solve the problem. The first one is a baseline that uses a heuristic based on user behavior. The second one is the use of Decision Trees with raw features.
+Development of feature engineering that assumes user recency and frequency help in predicting churn. Some transformations were also applied to assist the machine learning classifier.
+- Parameter optimization of an XGBoost model using Optuna to find the best parameters.
+- Prediction and analysis of results.
+- Refactoring of Jupyter notebooks into a Git project with DVC and Streamlit.
+- Model interpretation with SHAP values.
+
+# Questions for the data analysis.
 - This notebook is the first step before the modelling phase. We are going to check noise data, nulls. And try to investigate patterns. 
 - Main questions for the Exploratory Data Analysis (EDA):
     - Number of data points in train data and submission data.
@@ -37,9 +54,6 @@ This project was created using this (template)[https://github.com/gerbeldo/cooki
 
 ## The way I understood some concepts and variables
 
-"Gympass network": any gym registered in gympass.
-
-
 VARIABLE x DESCRIPTION
 - gym_days_since_first_visit: **The amount** of	days elapsed since first visit of **ANY** user
 - gym_last_60_days_visits: **The amount** of visits of **ANY** user in last 60 days
@@ -49,10 +63,6 @@ VARIABLE x DESCRIPTION
 - user_last_60_days_visit_share: **Amount** of visits in gym that will suffer uptier /**amount** of visits in gympass network, considering last 60 before communication
 - user_last_60_days_visits:	**Total visits** in gympass network, considering last 60 before communication
 - user_lifetime_visit_share:	During user lifetime, **total visits** in gym that will suffer uptier / **total visits** in gympass network
-
-
-# Feature Engineering
-- Multiple stats metrics (average, std deviation) of gyms features
 
 # Improvements
 - Use the features by different windows instead of just 60. To do this I would need the timestamp of each visit in gym
@@ -68,8 +78,3 @@ VARIABLE x DESCRIPTION
 - Retrain in all database
 - Use Orient Object Programming for to have a cleaner code
 - Diagnose the warnings
-
-
-# Questions
-- Does the 'gym network' contains the target gym?
-- Why the "_share" variables can be so high? 

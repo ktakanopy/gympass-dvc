@@ -1,5 +1,6 @@
 import hydra
 import pandas as pd
+import shap
 from omegaconf import DictConfig
 from sklearn.compose import ColumnTransformer
 from category_encoders import TargetEncoder
@@ -11,6 +12,7 @@ from src.utils import load_feature_list, load_xgb_params, save_predictions, \
 from collections import Counter
 from src.models.baselines import generate_decision_tree_predictions, generate_heuristic_baseline
 from sklearn.metrics import classification_report
+import matplotlib.pyplot as plt
 import json
 
 
@@ -47,11 +49,15 @@ def get_preprocessor(train):
 
 def model_fit(train, feature_list, params, target_name, test_size=0.2, random_state=42, early_stopping_rounds=20):
     preprocessor = get_preprocessor(train)
-   
+    
+
     X_train, y_train, X_val, y_val = generate_model_fit_inputs(train, random_state, feature_list, target_name, test_size)
     X_train = preprocessor.fit_transform(X_train, y_train)
 
     params['early_stopping_rounds'] = early_stopping_rounds # for validation and reduce overfit
+    params['gpu_id'] = 0
+    params['tree_method'] = 'gpu_hist'
+    
     model = XGBClassifier(**params, scale_pos_weight=get_weight_df(y_train), objective='binary:logistic', eval_metric='logloss')
     eval_set = [(preprocessor.transform(X_val), y_val)]
     # fit the model
@@ -63,6 +69,12 @@ def model_fit(train, feature_list, params, target_name, test_size=0.2, random_st
     # Saving the classification report
     with open('reports/validation_report.json', 'w') as file:
         file.write(json.dumps(report))
+
+    shap_values = shap.TreeExplainer(model).shap_values(X_train)
+
+    f = plt.figure()
+    shap.summary_plot(shap_values, X_train)
+    f.savefig("reports/summary_shap_values.png", bbox_inches='tight', dpi=600)
  
     return model, preprocessor
 
