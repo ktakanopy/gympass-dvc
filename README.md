@@ -1,6 +1,8 @@
 # Gympass churn prediction test
 this project was designed with the goal of solving a churn prediction challenge for a database of gym memberships. This project was done with machine learning classification, DVC pipelines and streamlit.
 
+![png](projeto.png)
+
 The full description of the task can be found in the task folder.
 
 You can find in this README:
