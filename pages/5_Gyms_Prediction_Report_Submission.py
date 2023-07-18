@@ -26,8 +26,17 @@ def main(config: DictConfig):
 
     st.subheader("Predicted churn gyms")
 
-    st.markdown(f"- We indicate upgrade if percent_predicted_lost_users < {config.generate_reports.threshold_user}") 
+    st.markdown(f"- We indicate upgrade if percent_predicted_lost_users < {config.generate_reports.threshold_user_submission}") 
+
     st.dataframe(test_report[['gym', 'percent_predicted_lost_users', 'percent_profit_pred_churn',  'predicted_indicate_upgrade_users']])
+    
+    plt.figure(figsize=(10,6))
+    ax = sns.histplot(x='percent_predicted_lost_users',data=test_report)
+    plt.title(f'Histplot percent_predicted_lost_users')        
+    for p in ax.patches:
+        ax.text(p.get_x() + p.get_width()/2, p.get_height(), '{0:.2f}'.format(p.get_height()), 
+                color='black', ha='center', va='bottom')
+    
     
     plt.figure(figsize=(10,6))
     ax = sns.countplot(x='predicted_indicate_upgrade_users',data=test_report)
