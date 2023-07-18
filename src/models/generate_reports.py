@@ -145,6 +145,7 @@ def generate_reports(config: DictConfig):
         predictions = pd.Series((predictions > best_threshold_f1).astype(int))
         if name == "XGBClassifier":
             y_test_xgb = (predictions > best_threshold_f1).astype(int)
+            best_threshold_xgb = best_threshold_f1
         
         metrics_df = generate_class_metrics_df(y_test, predictions, labels)
         cf_df = generate_confusion_matrix(y_test, predictions)
@@ -163,7 +164,9 @@ def generate_reports(config: DictConfig):
     dataframe_report.to_csv(f"reports/test_dataframe_report.csv", index=False)
 
     threshold_user_sub = config.generate_reports.threshold_user_submission
-    submission_report = generate_dataframe_report_submission(submission_data, y_test_xgb, threshold_user_sub) 
+    
+    y_test_xgb_sub = xgb_classifier_submission_predictions > best_threshold_xgb
+    submission_report = generate_dataframe_report_submission(submission_data, y_test_xgb_sub, threshold_user_sub) 
     submission_report.to_csv(f"reports/submission_dataframe_report.csv", index=False)
 
 
