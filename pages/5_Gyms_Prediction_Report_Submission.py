@@ -37,6 +37,7 @@ def main(config: DictConfig):
         ax.text(p.get_x() + p.get_width()/2, p.get_height(), '{0:.2f}'.format(p.get_height()), 
                 color='black', ha='center', va='bottom')
     
+    st.pyplot(plt)
     
     plt.figure(figsize=(10,6))
     ax = sns.countplot(x='predicted_indicate_upgrade_users',data=test_report)

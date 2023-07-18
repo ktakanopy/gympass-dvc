@@ -162,7 +162,8 @@ def generate_reports(config: DictConfig):
     dataframe_report = generate_dataframe_report(test_baseline_df, y_test, y_test_xgb, threshold_user)        
     dataframe_report.to_csv(f"reports/test_dataframe_report.csv", index=False)
 
-    submission_report = generate_dataframe_report_submission(submission_data, y_test_xgb, threshold_user) 
+    threshold_user_sub = config.generate_reports.threshold_user_submission
+    submission_report = generate_dataframe_report_submission(submission_data, y_test_xgb, threshold_user_sub) 
     submission_report.to_csv(f"reports/submission_dataframe_report.csv", index=False)
 
 

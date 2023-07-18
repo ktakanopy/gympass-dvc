@@ -12,10 +12,10 @@ def read_metrics(model):
 
 def plot_confusion_matrix(confusion_matrix, model_name):
     # Normalizes the confusion matrix
-    confusion_matrix_norm = confusion_matrix.div(confusion_matrix.sum(axis=1), axis=0)
+    # confusion_matrix_norm = confusion_matrix.div(confusion_matrix.sum(axis=1), axis=0)
 
     plt.figure(figsize=(8, 6))
-    sns.heatmap(confusion_matrix_norm, annot=True, cmap='Blues', fmt=".2f")
+    sns.heatmap(confusion_matrix, annot=True, cmap='Blues', fmt=".2f")
     plt.title(f'Confusion Matrix for {model_name}')
     plt.xlabel('Predicted Class')
     plt.ylabel('True Class')

@@ -55,5 +55,5 @@ stages:
       nfiles: 0
     - path: src/models/generate_reports.py
       hash: md5
-      md5: 52818de28ea09afd4772229c41b6282e
-      size: 8951
+      md5: 45a04f80033a2c513e44338410b63ff7
+      size: 9030
