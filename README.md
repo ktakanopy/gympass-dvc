@@ -26,6 +26,12 @@ the following steps were undertaken to address the problem:
 - refactoring: transformed jupyter notebooks into a git project with dvc and streamlit.
 - model interpretation: interpreted the model with shap values.
 
+## Strategy for code refactor
+
+Firstly, we needed to pass all the code to tree steps in DVC pipelines. One step of processing data, one step of train model and finally a step to generate reports. The generated report files are read by streamlit. Also, we used the optuna generated best params to input in the train step in our pipeline.
+
+![png](arch.png)
+
 # Getting started
 1. Create a virtual environment:
 ```
