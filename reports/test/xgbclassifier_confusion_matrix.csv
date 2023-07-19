@@ -1,3 +1,3 @@
-,predicted_negative,predicted_positive
-actual_negative,604,401
-actual_positive,1932,3411
+,0,1
+0,3411,1932
+1,401,604

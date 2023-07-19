@@ -22,23 +22,17 @@ plan_price_dict = {
     'Free': 0
 }
 
-def generate_class_metrics_df(y_test, y_pred_class, labels):
-    y_test_mapped = y_test.map({0: 'non-churn', 1: 'churn'})
-    y_pred_class_mapped = y_pred_class.map({0: 'non-churn', 1: 'churn'})
-    report_dict = classification_report(y_test_mapped, y_pred_class_mapped, output_dict=True, labels=labels)
+def generate_class_metrics_df(y_test, y_pred_class):
+
+    report_dict = classification_report(y_test, y_pred_class, output_dict=True)
     metrics_df = pd.DataFrame(report_dict).transpose()
     return metrics_df
 
 def generate_confusion_matrix(y_test, y_pred_class):
-    y_test_mapped = y_test.map({0: 'non-churn', 1: 'churn'})
-    y_pred_class_mapped = y_pred_class.map({0: 'non-churn', 1: 'churn'})
-    
-    conf_matrix = confusion_matrix(y_test_mapped, y_pred_class_mapped)
+    conf_matrix = confusion_matrix(y_test, y_pred_class)
 
     # Transform to dataframe for easier visualization
-    conf_matrix_df = pd.DataFrame(conf_matrix, 
-                                index=['actual_negative', 'actual_positive'], 
-                                columns=['predicted_negative', 'predicted_positive'])
+    conf_matrix_df = pd.DataFrame(conf_matrix)
     return conf_matrix_df
 
 def generate_dataframe_report(X_test, y_test, y_test_xgb, threshold_user):
@@ -133,8 +127,6 @@ def generate_reports(config: DictConfig):
     submission_data = pd.read_parquet(config.paths.processed.submission)
     y_test = test_baseline_df[config.generate_reports.target].reset_index(drop=True)
    
-    labels = ["non-churn", "churn"]
-    
     test_names_predictions = zip(["Heuristic-Baseline", "Decision-Tree-Baseline", "XGBClassifier"], \
         [heuristic_test_predictions, decision_test_tree_predictions, xgb_classifier_test_predictions])
 
@@ -146,8 +138,7 @@ def generate_reports(config: DictConfig):
         if name == "XGBClassifier":
             y_test_xgb = (predictions > best_threshold_f1).astype(int)
             best_threshold_xgb = best_threshold_f1
-        
-        metrics_df = generate_class_metrics_df(y_test, predictions, labels)
+        metrics_df = generate_class_metrics_df(y_test, predictions)
         cf_df = generate_confusion_matrix(y_test, predictions)
         print("** class metrics:")
         print(metrics_df)

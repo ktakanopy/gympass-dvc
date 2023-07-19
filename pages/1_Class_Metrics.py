@@ -24,7 +24,7 @@ def main():
         class_metrics.set_index("Unnamed: 0", inplace=True)
         metrics_dfs.append((model, class_metrics))
     # Specify the rows that you want to include
-    rows = ['non-churn', 'churn', 'macro avg']
+    rows = ['0', '1', 'macro avg']
     
     all_metrics_rows = []
 
@@ -38,10 +38,12 @@ def main():
 
     st.header("Model Comparison")
 
-    type_metrics = ['churn', 'non-churn', 'macro avg']
+    type_metrics = ['0', '1', 'macro avg']
+    
+    class_name = {"0": "non-churn", "1": "churn", "macro avg": "both classes"}
     
     for type_metric in type_metrics:
-        st.subheader(f"Plot for {type_metric}")
+        st.subheader(f"Plot for {class_name[type_metric]}")
         metric_df = all_metrics[all_metrics.Type == type_metric]
         df_melt = metric_df.melt(id_vars=['Model Name', 'Type'], value_vars=['Precision', 'Recall', 'F1-score'], var_name='Metric', value_name='Value')
  
